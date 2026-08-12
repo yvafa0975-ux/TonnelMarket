@@ -159,38 +159,44 @@
     </footer>
 
     <script>
-        const SPREADSHEET_ID = '1erOanb6E6bPqGi9RQSRlQfJhFgVufmotQ-8U83TP1no';
-        const url = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:json`;
+        // Ссылка на экспорт вашей таблицы в CSV формат (работает безотказно)
+        const csvUrl = 'https://google.com';
+
+        // Простая функция для разбора строк CSV формата
+        function parseCSV(text) {
+            let lines = text.split('\n');
+            return lines.map(line => {
+                // Разделяем по запятым, убирая кавычки, если они есть
+                return line.split(',').map(cell => cell.replace(/^"|"$/g, '').trim());
+            });
+        }
 
         async function loadMarketData() {
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Network error');
+                const response = await fetch(csvUrl);
+                if (!response.ok) throw new Error('Ошибка сети');
                 
                 const text = await response.text();
-                const startIdx = text.indexOf('{');
-                const endIdx = text.lastIndexOf('}');
-                if (startIdx === -1 || endIdx === -1) throw new Error('Invalid JSON');
-                
-                const jsonData = JSON.parse(text.substring(startIdx, endIdx + 1));
-                const rows = jsonData.table.rows;
+                const rows = parseCSV(text);
                 const container = document.getElementById('marketLots');
                 
-                if (!rows || rows.length <= 1) {
+                // Проверяем, есть ли строки кроме заголовков
+                if (!rows || rows.length <= 1 || rows[1][0] === "") {
                     container.innerHTML = '<div class="status-message">На данный момент предложений нет.</div>';
                     return;
                 }
 
                 let htmlContent = '';
 
+                // Проходим со 2-й строки (индекс 1)
                 for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i].c;
-                    if (!row || !row[0] || row[0].v === null) continue; 
-                    
-                    const title = row[0] ? row[0].v : 'Без названия';
-                    const desc = row[1] ? row[1].v : '';
-                    const currency = row[2] ? row[2].v.toString().toLowerCase().trim() : 'stars';
-                    const price = row[3] ? row[3].v : '0';
+                    const row = rows[i];
+                    if (!row || row.length < 4 || row[0] === "") continue;
+
+                    const title = row[0] || 'Без названия';
+                    const desc = row[1] || '';
+                    const currency = (row[2] || 'stars').toLowerCase().trim();
+                    const price = row[3] || '0';
 
                     const currencySign = currency === 'gram' ? '💎' : '⭐️';
                     const currencyText = currency === 'gram' ? 'GRAM' : 'Stars';
@@ -217,7 +223,7 @@
             } catch (error) {
                 console.error(error);
                 document.getElementById('marketLots').innerHTML = 
-                    '<div class="status-message" style="color:#e53935;">Ошибка чтения данных. Пожалуйста, обновите страницу.</div>';
+                    '<div class="status-message" style="color:#e53935;">Ошибка загрузки базы данных. Пожалуйста, обновите страницу.</div>';
             }
         }
 
