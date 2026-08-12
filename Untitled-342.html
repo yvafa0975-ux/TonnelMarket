@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TonnelMarket — Премиум Платформа</title>
+    <style>
+        :root {
+            --bg-color: #0b141c;
+            --surface-color: #17212b;
+            --text-color: #f5f5f5;
+            --text-muted: #708499;
+            --accent-stars: #ffa726;
+            --accent-gram: #24a1de;
+            --border-color: #24313f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(45deg, var(--accent-gram), #54b4e6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .market-container {
+            width: 100%;
+            max-width: 800px;
+            margin-top: 25px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .lot-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .lot-card:hover {
+            border-color: #2b394a;
+            transform: translateY(-1px);
+        }
+
+        .lot-info .lot-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .lot-info .lot-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .lot-pricing {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .price-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .price-tag.stars { color: var(--accent-stars); }
+        .price-tag.gram { color: var(--accent-gram); }
+
+        .buy-btn {
+            background-color: #24a1de;
+            color: #fff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .status-message {
+            color: var(--text-muted);
+            font-size: 14px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 40px 0 10px 0;
+            text-align: center;
+        }
+
+        footer p {
+            font-size: 10px;
+            color: rgba(112, 132, 153, 0.4);
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>TonnelMarket</h1>
+        <p>Аналог Fragment для приватного канала</p>
+    </header>
+
+    <div class="market-container" id="marketLots">
+        <div class="status-message" id="statusMessage">Загрузка актуальных предложений...</div>
+    </div>
+
+    <footer>
+        <p>сайт создавался для catugram</p>
+    </footer>
+
+    <script>
+        const SPREADSHEET_ID = '1erOanb6E6bPqGi9RQSRlQfJhFgVufmotQ-8U83TP1no';
+        const url = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:json`;
+
+        async function loadMarketData() {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network error');
+                
+                const text = await response.text();
+                const startIdx = text.indexOf('{');
+                const endIdx = text.lastIndexOf('}');
+                if (startIdx === -1 || endIdx === -1) throw new Error('Invalid JSON');
+                
+                const jsonData = JSON.parse(text.substring(startIdx, endIdx + 1));
+                const rows = jsonData.table.rows;
+                const container = document.getElementById('marketLots');
+                
+                if (!rows || rows.length <= 1) {
+                    container.innerHTML = '<div class="status-message">На данный момент предложений нет.</div>';
+                    return;
+                }
+
+                let htmlContent = '';
+
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i].c;
+                    if (!row || !row[0] || row[0].v === null) continue; 
+                    
+                    const title = row[0] ? row[0].v : 'Без названия';
+                    const desc = row[1] ? row[1].v : '';
+                    const currency = row[2] ? row[2].v.toString().toLowerCase().trim() : 'stars';
+                    const price = row[3] ? row[3].v : '0';
+
+                    const currencySign = currency === 'gram' ? '💎' : '⭐️';
+                    const currencyText = currency === 'gram' ? 'GRAM' : 'Stars';
+                    const currencyClass = currency === 'gram' ? 'gram' : 'stars';
+
+                    htmlContent += `
+                        <div class="lot-card">
+                            <div class="lot-info">
+                                <div class="lot-title">${title}</div>
+                                <div class="lot-desc">${desc}</div>
+                            </div>
+                            <div class="lot-pricing">
+                                <div class="price-tag ${currencyClass}">
+                                    ${currencySign} ${price} ${currencyText}
+                                </div>
+                                <button class="buy-btn" onclick="alert('Для покупки свяжитесь с владельцем')">Купить</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = htmlContent || '<div class="status-message">На данный момент предложений нет.</div>';
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('marketLots').innerHTML = 
+                    '<div class="status-message" style="color:#e53935;">Ошибка чтения данных. Пожалуйста, обновите страницу.</div>';
+            }
+        }
+
+        loadMarketData();
+    </script>
+</body>
+</html>
