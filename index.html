@@ -129,6 +129,13 @@
             background-color: #1d82b3;
         }
 
+        .status-message {
+            color: var(--text-muted);
+            font-size: 14px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
         footer {
             margin-top: auto;
             padding: 40px 0 10px 0;
@@ -149,28 +156,93 @@
         <p>Аналог Fragment для приватного канала</p>
     </header>
 
-    <div class="market-container">
-        
-        <!-- КАРТОЧКА ТВОЕГО ТОВАРА -->
-        <div class="lot-card">
-            <div class="lot-info">
-                <div class="lot-title">NFT DARK</div>
-                <div class="lot-desc">@Kallen юз</div>
-            </div>
-            <div class="lot-pricing">
-                <div class="price-tag stars">
-                    ⭐️ 1000 Stars
-                </div>
-                <!-- Кнопка ведет сразу в диалог с тобой -->
-                <a href="https://t.me" target="_blank" class="buy-btn">Купить</a>
-            </div>
-        </div>
-
+    <div class="market-container" id="marketLots">
+        <div class="status-message">Загрузка актуальных предложений...</div>
     </div>
 
     <footer>
         <p>сайт создавался для catugram</p>
     </footer>
 
+    <script>
+        const SPREADSHEET_ID = '1erOanb6E6bPqGi9RQSRlQfJhFgVufmotQ-8U83TP1no';
+        // Используем чистый экспорт в CSV — это работает быстрее и надежнее всего
+        const csvUrl = `https://google.com{SPREADSHEET_ID}/export?format=csv&id=${SPREADSHEET_ID}`;
+
+        // Функция для безопасного разбора строк CSV с удалением кавычек
+        function parseCSVLine(line) {
+            let result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                let char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current.trim());
+            return result;
+        }
+
+        async function loadMarketData() {
+            try {
+                const response = await fetch(csvUrl);
+                if (!response.ok) throw new Error('Network error');
+                
+                const text = await response.text();
+                const lines = text.split(/\r?\n/);
+                const container = document.getElementById('marketLots');
+                
+                let htmlContent = '';
+
+                // Пробегаем по строкам таблицы начиная со второй (индекс 1)
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue; // Пропускаем пустые строки
+                    
+                    const row = parseCSVLine(lines[i]);
+                    if (!row[0]) continue; // Пропускаем, если нет названия лота
+
+                    const title = row[0];
+                    const desc = row[1] || '';
+                    const currency = (row[2] || 'stars').toLowerCase().trim();
+                    const price = row[3] || '0';
+
+                    const currencySign = currency === 'gram' ? '💎' : '⭐️';
+                    const currencyText = currency === 'gram' ? 'GRAM' : 'Stars';
+                    const currencyClass = currency === 'gram' ? 'gram' : 'stars';
+
+                    htmlContent += `
+                        <div class="lot-card">
+                            <div class="lot-info">
+                                <div class="lot-title">${title}</div>
+                                <div class="lot-desc">${desc}</div>
+                            </div>
+                            <div class="lot-pricing">
+                                <div class="price-tag ${currencyClass}">
+                                    ${currencySign} ${price} ${currencyText}
+                                </div>
+                                <a href="https://t.me" target="_blank" class="buy-btn">Купить</a>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = htmlContent || '<div class="status-message">На данный момент активных предложений нет.</div>';
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('marketLots').innerHTML = 
+                    '<div class="status-message" style="color:#e53935;">Ошибка обновления. Пожалуйста, обновите страницу через вкладку Инкогнито (сброс кэша).</div>';
+            }
+        }
+
+        loadMarketData();
+    </script>
 </body>
 </html>
