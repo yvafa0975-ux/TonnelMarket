@@ -121,13 +121,12 @@
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
+            text-decoration: none;
+            text-align: center;
         }
 
-        .status-message {
-            color: var(--text-muted);
-            font-size: 14px;
-            text-align: center;
-            margin-top: 40px;
+        .buy-btn:hover {
+            background-color: #1d82b3;
         }
 
         footer {
@@ -150,84 +149,28 @@
         <p>Аналог Fragment для приватного канала</p>
     </header>
 
-    <div class="market-container" id="marketLots">
-        <div class="status-message" id="statusMessage">Загрузка актуальных предложений...</div>
+    <div class="market-container">
+        
+        <!-- КАРТОЧКА ТВОЕГО ТОВАРА -->
+        <div class="lot-card">
+            <div class="lot-info">
+                <div class="lot-title">NFT DARK</div>
+                <div class="lot-desc">@Kallen юз</div>
+            </div>
+            <div class="lot-pricing">
+                <div class="price-tag stars">
+                    ⭐️ 1000 Stars
+                </div>
+                <!-- Кнопка ведет сразу в диалог с тобой -->
+                <a href="https://t.me" target="_blank" class="buy-btn">Купить</a>
+            </div>
+        </div>
+
     </div>
 
     <footer>
         <p>сайт создавался для catugram</p>
     </footer>
 
-    <script>
-        // Ссылка на экспорт вашей таблицы в CSV формат (работает безотказно)
-        const csvUrl = 'https://google.com';
-
-        // Простая функция для разбора строк CSV формата
-        function parseCSV(text) {
-            let lines = text.split('\n');
-            return lines.map(line => {
-                // Разделяем по запятым, убирая кавычки, если они есть
-                return line.split(',').map(cell => cell.replace(/^"|"$/g, '').trim());
-            });
-        }
-
-        async function loadMarketData() {
-            try {
-                const response = await fetch(csvUrl);
-                if (!response.ok) throw new Error('Ошибка сети');
-                
-                const text = await response.text();
-                const rows = parseCSV(text);
-                const container = document.getElementById('marketLots');
-                
-                // Проверяем, есть ли строки кроме заголовков
-                if (!rows || rows.length <= 1 || rows[1][0] === "") {
-                    container.innerHTML = '<div class="status-message">На данный момент предложений нет.</div>';
-                    return;
-                }
-
-                let htmlContent = '';
-
-                // Проходим со 2-й строки (индекс 1)
-                for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i];
-                    if (!row || row.length < 4 || row[0] === "") continue;
-
-                    const title = row[0] || 'Без названия';
-                    const desc = row[1] || '';
-                    const currency = (row[2] || 'stars').toLowerCase().trim();
-                    const price = row[3] || '0';
-
-                    const currencySign = currency === 'gram' ? '💎' : '⭐️';
-                    const currencyText = currency === 'gram' ? 'GRAM' : 'Stars';
-                    const currencyClass = currency === 'gram' ? 'gram' : 'stars';
-
-                    htmlContent += `
-                        <div class="lot-card">
-                            <div class="lot-info">
-                                <div class="lot-title">${title}</div>
-                                <div class="lot-desc">${desc}</div>
-                            </div>
-                            <div class="lot-pricing">
-                                <div class="price-tag ${currencyClass}">
-                                    ${currencySign} ${price} ${currencyText}
-                                </div>
-                                <button class="buy-btn" onclick="alert('Для покупки свяжитесь с владельцем')">Купить</button>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                container.innerHTML = htmlContent || '<div class="status-message">На данный момент предложений нет.</div>';
-
-            } catch (error) {
-                console.error(error);
-                document.getElementById('marketLots').innerHTML = 
-                    '<div class="status-message" style="color:#e53935;">Ошибка загрузки базы данных. Пожалуйста, обновите страницу.</div>';
-            }
-        }
-
-        loadMarketData();
-    </script>
 </body>
 </html>
