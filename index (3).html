@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TonnelMarket — Премиум Платформа</title>
+    <style>
+        :root {
+            --bg-color: #0b141c;
+            --surface-color: #17212b;
+            --text-color: #f5f5f5;
+            --text-muted: #708499;
+            --accent-stars: #ffa726;
+            --accent-gram: #24a1de;
+            --border-color: #24313f;
+            --admin-bg: #1e2b38;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(45deg, var(--accent-gram), #54b4e6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .market-container {
+            width: 100%;
+            max-width: 800px;
+            margin-top: 25px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .lot-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .lot-card:hover {
+            border-color: #2b394a;
+            transform: translateY(-1px);
+        }
+
+        .lot-info .lot-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .lot-info .lot-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .lot-pricing {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .price-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .price-tag.stars { color: var(--accent-stars); }
+        .price-tag.gram { color: var(--accent-gram); }
+
+        .buy-btn {
+            background-color: #24a1de;
+            color: #fff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Панель администратора */
+        .admin-trigger {
+            margin-top: 40px;
+            background: none;
+            border: none;
+            color: var(--border-color);
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .admin-panel {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--admin-bg);
+            border: 1px dashed var(--accent-gram);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .admin-panel h3 {
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: var(--accent-gram);
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .admin-btn {
+            background: var(--accent-gram);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .delete-btn {
+            background: #e53935;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .code-output {
+            margin-top: 15px;
+            background: #000;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #4af626;
+            white-space: pre-wrap;
+            word-break: break-all;
+            display: none;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 40px 0 10px 0;
+            text-align: center;
+        }
+
+        footer p {
+            font-size: 10px;
+            color: rgba(112, 132, 153, 0.4);
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>TonnelMarket</h1>
+        <p>Аналог Fragment для приватного канала</p>
+    </header>
+
+    <!-- Контейнер с предложениями -->
+    <div class="market-container" id="marketLots">
+        
+        <!-- Пример лота 1 (Звезды) -->
+        <div class="lot-card" id="lot-1">
+            <div class="lot-info">
+                <div class="lot-title">Приватный инвайт на 1 месяц</div>
+                <div class="lot-desc">Доступ к эксклюзивному контенту приватного пула</div>
+                <button class="delete-btn" style="display:none;" onclick="deleteLot('lot-1')">Удалить лот</button>
+            </div>
+            <div class="lot-pricing">
+                <div class="price-tag stars">
+                    ⭐️ 250 Stars
+                </div>
+                <button class="buy-btn" onclick="alert('Для покупки свяжитесь с владельцем')">Купить</button>
+            </div>
+        </div>
+
+        <!-- Пример лота 2 (Gram) -->
+        <div class="lot-card" id="lot-2">
+            <div class="lot-info">
+                <div class="lot-title">Навсегда + Бонус архив</div>
+                <div class="lot-desc">Полный безлимитный доступ без доплат</div>
+                <button class="delete-btn" style="display:none;" onclick="deleteLot('lot-2')">Удалить лот</button>
+            </div>
+            <div class="lot-pricing">
+                <div class="price-tag gram">
+                    💎 15 GRAM
+                </div>
+                <button class="buy-btn" onclick="alert('Для покупки свяжитесь с владельцем')">Купить</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Скрытая кнопка входа для админа -->
+    <button class="admin-trigger" onclick="authAdmin()">Панель управления</button>
+
+    <!-- Панель администратора -->
+    <div class="admin-panel" id="adminPanel">
+        <h3>Управление предложениями (Режим Админа)</h3>
+        <div class="form-group">
+            <label>Название предложения</label>
+            <input type="text" id="lotTitle" placeholder="Например: Доступ в приватку на полгода">
+        </div>
+        <div class="form-group">
+            <label>Описание</label>
+            <input type="text" id="lotDesc" placeholder="Например: Включает чат и медиа">
+        </div>
+        <div class="form-group">
+            <label>Валюта</label>
+            <select id="lotCurrency">
+                <option value="stars">⭐️ Telegram Stars</option>
+                <option value="gram">💎 Gram</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Цена (количество)</label>
+            <input type="number" id="lotPrice" placeholder="Например: 500">
+        </div>
+        <button class="admin-btn" onclick="addLot()">Добавить предложение на сайт</button>
+        
+        <button class="admin-btn" style="background:#4caf50; margin-top:15px;" onclick="generateCode()">1. Сгенерировать новый код</button>
+        <div class="code-output" id="codeOutput">Скопируйте текст ниже и обновите ваш файл на GitHub...</div>
+    </div>
+
+    <footer>
+        <p>сайт создавался для catugram</p>
+    </footer>
+
+    <script>
+        // Функция авторизации админа
+        function authAdmin() {
+            const secretPassword = "superadmin2026"; 
+            
+            const pass = prompt("Введите пароль администратора:");
+            if (pass === secretPassword) {
+                document.getElementById('adminPanel').style.display = 'block';
+                const delButtons = document.querySelectorAll('.delete-btn');
+                delButtons.forEach(btn => btn.style.display = 'block');
+                alert("Доступ разрешен. Вы можете добавлять и удалять лоты.");
+            } else {
+                alert("Неверный пароль!");
+            }
+        }
+
+        // Функция добавления лота
+        function addLot() {
+            const title = document.getElementById('lotTitle').value;
+            const desc = document.getElementById('lotDesc').value;
+            const currency = document.getElementById('lotCurrency').value;
+            const price = document.getElementById('lotPrice').value;
+
+            if(!title || !price) {
+                alert("Заполните название и цену!");
+                return;
+            }
+
+            const id = 'lot-' + Date.now();
+            const currencySign = currency === 'stars' ? '⭐️' : '💎';
+            const currencyText = currency === 'stars' ? 'Stars' : 'GRAM';
+
+            const lotHtml = `
+                <div class="lot-card" id="\${id}">
+                    <div class="lot-info">
+                        <div class="lot-title">\${title}</div>
+                        <div class="lot-desc">\${desc}</div>
+                        <button class="delete-btn" onclick="deleteLot('\${id}')">Удалить лот</button>
+                    </div>
+                    <div class="lot-pricing">
+                        <div class="price-tag \${currency}">
+                            \${currencySign} \${price} \${currencyText}
+                        </div>
+                        <button class="buy-btn" onclick="alert('Для покупки свяжитесь с владельцем')">Купить</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('marketLots').insertAdjacentHTML('beforeend', lotHtml);
+            
+            document.getElementById('lotTitle').value = '';
+            document.getElementById('lotDesc').value = '';
+            document.getElementById('lotPrice').value = '';
+        }
+
+        // Функция удаления лота
+        function deleteLot(id) {
+            const element = document.getElementById(id);
+            if(element) {
+                element.remove();
+            }
+        }
+
+        // Генерация обновленного чистого кода для сохранения на GitHub
+        function generateCode() {
+            const delButtons = document.querySelectorAll('.delete-btn');
+            delButtons.forEach(btn => btn.style.display = 'none');
+            document.getElementById('adminPanel').style.display = 'none';
+
+            const currentHtml = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            
+            const output = document.getElementById('codeOutput');
+            output.style.display = 'block';
+            output.innerText = "ИНСТРУКЦИЯ:\n1. Выделите и скопируйте весь код ниже.\n2. Перейдите в ваш репозиторий на GitHub в файл index.html.\n3. Нажмите редактировать (карандаш) и замените старый код на этот.\n\n=== НАЧАЛО КОДА ===\n" + currentHtml;
+            
+            document.getElementById('adminPanel').style.display = 'block';
+            delButtons.forEach(btn => btn.style.display = 'block');
+        }
+    </script>
+</body>
+</html>
